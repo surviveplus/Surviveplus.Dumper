@@ -25,6 +25,104 @@ namespace Net.Surviveplus.Dump
         /// </summary>
         public static DirectoryInfo Folder { get; set; } = new DirectoryInfo(Properties.Settings.Default.DumpFolder);
 
-    } // end class
+        #region Infrastructure Methods  : GetDumpFile, WriteTextFile 
 
+        /// <summary>
+        /// <para xml:lang="en">
+        /// Get a object that represents the dump file.
+        /// Do not use this method. This is used for the infrastructure of the framework.
+        /// </para>
+        /// <para xml:lang="ja">
+        /// ダンプファイルを表すオブジェクトを取得します。
+        /// このメソッドを使用しないでください。これはフレームワークの機能のために使用されます。
+        /// </para>
+        /// </summary>
+        /// <param name="name">
+        /// <para xml:lang="en">Text to be used for the file name.</para>
+        /// <para xml:lang="ja">ファイルの名前に使用されるテキストです。</para>
+        /// </param>
+        /// <param name="extension">
+        /// <para xml:lang="en">Extension to be used for the file name. Default is ".txt".</para>
+        /// <para xml:lang="ja">ファイルの名前に使用される拡張子です。既定値は ".txt" です。</para>
+        /// </param>
+        /// <returns>
+        /// <para xml:lang="en">Return a object that represents a file. A folder of the file is created.</para>
+        /// <para xml:lang="ja">ファイルを表すオブジェクトを返します。ファイルのフォルダは作成されます。</para>
+        /// </returns>
+        public static FileInfo GetDumpFile(string name, string extension = ".txt")
+        {
+            var file = new FileInfo(Path.Combine(
+                Dumper.Folder.FullName, 
+                name + extension));
+
+            if (Dumper.IsEnabled && file.Directory.Exists == false)
+            {
+                file.Directory.Create();
+            }
+
+            return file;
+        } // end function
+
+        /// <summary>
+        /// <para xml:lang="en">
+        /// Write text to the dump file.
+        /// Do not use this method. This is used for the infrastructure of the framework.
+        /// </para>
+        /// <para xml:lang="ja">
+        /// テキストをダンプファイルに書き込みます。
+        /// このメソッドを使用しないでください。これはフレームワークの機能のために使用されます。
+        /// </para>
+        /// </summary>
+        /// <param name="name">
+        /// <para xml:lang="en">Text to be used for the file name.</para>
+        /// <para xml:lang="ja">ファイルの名前に使用されるテキストです。</para>
+        /// </param>
+        /// <param name="extension">
+        /// <para xml:lang="en">Extension to be used for the file name. Default is ".txt".</para>
+        /// <para xml:lang="ja">ファイルの名前に使用される拡張子です。既定値は ".txt" です。</para>
+        /// </param>
+        /// <param name="action">
+        /// <para xml:lang="en">
+        /// Action to write text to the file.
+        /// Write text to the file using the TextWriter argument.
+        /// </para>
+        /// <para xml:lang="ja">
+        /// ファイルを書き込むアクションを指定します。
+        /// 引数のTextWriterを使用してテキストをファイルに書き込みます。
+        /// </para>
+        /// </param>
+        public static void WriteTextFile( string name, string extension , Action<TextWriter> action )
+        {
+            if (Dumper.IsEnabled == false) return;
+            if (Dumper.Folder == null) return;
+            if (action == null) return;
+
+            var file = Dumper.GetDumpFile(name, extension).FullName;
+            System.Diagnostics.Debug.WriteLine(file);
+            using (var stream = new FileStream(file, FileMode.Append,  FileAccess.Write))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            {
+                action(writer);
+            } // end using (stream, writer)
+
+        } // end sub
+        #endregion
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="name"></param>
+        /// <param name="format"></param>
+        public static void DumpJson<T>(T target, string name, Func<T, object> format)
+        {
+            Dumper.WriteTextFile(name, ".json" , writer =>
+            {
+                writer.Write( format(target).ToJson() );
+            });
+        } // end sub
+
+    } // end class
 } // end namespace
