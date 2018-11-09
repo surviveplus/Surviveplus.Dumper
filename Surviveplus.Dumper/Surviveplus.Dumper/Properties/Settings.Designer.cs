@@ -31,5 +31,14 @@ namespace Net.Surviveplus.Dump.Properties {
                 return ((bool)(this["DumpIsEnabled"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("dump")]
+        public string DumpFolder {
+            get {
+                return ((string)(this["DumpFolder"]));
+            }
+        }
     }
 }
