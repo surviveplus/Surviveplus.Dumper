@@ -98,7 +98,6 @@ namespace Net.Surviveplus.Dump
             if (action == null) return;
 
             var file = Dumper.GetDumpFile(name, extension).FullName;
-            System.Diagnostics.Debug.WriteLine(file);
             using (var stream = new FileStream(file, FileMode.Append,  FileAccess.Write))
             using (var writer = new StreamWriter(stream, Encoding.UTF8))
             {
@@ -121,6 +120,102 @@ namespace Net.Surviveplus.Dump
             Dumper.WriteTextFile(name, ".json" , writer =>
             {
                 writer.Write( format(target).ToJson() );
+            });
+        } // end sub
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="name"></param>
+        /// <param name="format"></param>
+        public static void DumpTsvRecord<T>(T target, string name, Func<T, object> format)
+        {
+            Dumper.DumpTsv(new T[] { target }, name, format, false);
+        } // end sub
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="name"></param>
+        /// <param name="format"></param>
+        /// <param name="writeHeader"></param>
+        public static void DumpTsv<T>(IEnumerable<T> target, string name, Func<T, object> format, bool writeHeader = true)
+        {
+            Dumper.WriteTextFile(name, ".tsv", writer =>
+            {
+                var configuration = new CsvHelper.Configuration.Configuration { Delimiter = "\t" };
+                using (var tsv = new CsvHelper.CsvWriter(writer, configuration))
+                {
+                    var isFirst = true;
+                    foreach (var item in target)
+                    {
+                        var v = format(item);
+                        if(isFirst){
+                            isFirst = false;
+                            if (writeHeader)
+                            {
+                                tsv.WriteHeader(v.GetType());
+                                tsv.NextRecord();
+                            }
+                        } // end if
+
+                        tsv.WriteRecord(v);
+                        tsv.NextRecord();
+                    } // next item
+                } // end using (tsv)
+            });
+        } // end sub
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="values"></param>
+        /// <param name="name"></param>
+        public static void WriteTsvRecord<T>(IEnumerable<T> values, string name)
+        {
+            Dumper.WriteTsv<T>(new IEnumerable<T>[] { values }, name);
+        } // end sub
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="name"></param>
+        /// <param name="header"></param>
+        public static void WriteTsv<T>(IEnumerable<IEnumerable<T>> target, string name, IEnumerable<string>header = null)
+        {
+            Dumper.WriteTextFile(name, ".tsv", writer =>
+            {
+                var configuration = new CsvHelper.Configuration.Configuration { Delimiter = "\t" };
+                using (var tsv = new CsvHelper.CsvWriter(writer, configuration))
+                {
+
+                    if (header != null)
+                    {
+                        foreach (var c in header)
+                        {
+                            tsv.WriteField(c);
+                        }
+                        tsv.NextRecord();
+                    } // end if
+
+                    foreach (var item in target)
+                    {
+                        foreach (var f in item)
+                        {
+                            tsv.WriteField(f);
+                        }
+                        tsv.NextRecord();
+
+                    } // next item
+                } // end using (tsv)
             });
         } // end sub
 
