@@ -123,6 +123,26 @@ namespace Net.Surviveplus.Dump
             });
         } // end sub
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="target"></param>
+        /// <param name="name"></param>
+        /// <param name="format"></param>
+        public static void DumpTsvHeader<T>(T target, string name, Func<T, object> format)
+        {
+            Dumper.WriteTextFile(name, ".tsv", writer =>
+            {
+                var configuration = new CsvHelper.Configuration.Configuration { Delimiter = "\t" };
+                using (var tsv = new CsvHelper.CsvWriter(writer, configuration))
+                {
+                    var v = format(target);
+                    tsv.WriteHeader(v.GetType());
+                    tsv.NextRecord();
+                } // end using (tsv)
+            });
+        } // end sub
 
         /// <summary>
         /// 
@@ -131,9 +151,10 @@ namespace Net.Surviveplus.Dump
         /// <param name="target"></param>
         /// <param name="name"></param>
         /// <param name="format"></param>
-        public static void DumpTsvRecord<T>(T target, string name, Func<T, object> format)
+        /// <param name="writeHeader"></param>
+        public static void DumpTsvRecord<T>(T target, string name, Func<T, object> format, bool writeHeader = false)
         {
-            Dumper.DumpTsv(new T[] { target }, name, format, false);
+            Dumper.DumpTsv(new T[] { target }, name, format, writeHeader);
         } // end sub
 
         /// <summary>
@@ -169,6 +190,17 @@ namespace Net.Surviveplus.Dump
                     } // next item
                 } // end using (tsv)
             });
+        } // end sub
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="header"></param>
+        public static void WriteTsvHeader<T>(string name, IEnumerable<T> header)
+        {
+            Dumper.WriteTsv<T>(new IEnumerable<T>[] { header }, name);
         } // end sub
 
         /// <summary>

@@ -4,10 +4,11 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Net.Surviveplus.Dump;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Net.Surviveplus.Dump.Test
 {
-    [TestClass]
+    [TestClass, ExcludeFromCodeCoverage]
     public class DumperTest
     {
         public TestContext TestContext { get; set;  }
@@ -111,6 +112,49 @@ namespace Net.Surviveplus.Dump.Test
         #region WriteFile
 
         [TestMethod]
+        public void TestMethod_WriteTextFile_DoNotWrite_IsEnabledIsFalse()
+        {
+            Dumper.IsEnabled = false;
+            var name = this.TestContext.TestName;
+            Dumper.WriteTextFile(name, ".txt", writer =>
+            {
+                writer.Write("SAMPLE");
+                Assert.Fail("Dump file was wrote, even though IsEnabled property is false.");
+            });
+
+            var f = Dumper.GetDumpFile(name, ".txt");
+            Assert.IsFalse(f.Exists, "Dump file was created, even though IsEnabled property is false.");
+
+        } // end sub
+
+        [TestMethod]
+        public void TestMethod_WriteTextFile_DoNotWrite_FolderIsNull()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = null;
+            var name = this.TestContext.TestName;
+            Dumper.WriteTextFile(name, ".txt", writer =>
+            {
+                writer.Write("SAMPLE");
+                Assert.Fail("Dump file was wrote, even though Folder property is false.");
+            });
+
+        } // end sub
+
+        [TestMethod]
+        public void TestMethod_WriteTextFile_DoNotWrite_ActionIsNull()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            var name = this.TestContext.TestName;
+            Dumper.WriteTextFile(name, ".txt", null);
+
+            var f = Dumper.GetDumpFile(name, ".txt");
+            Assert.IsFalse(f.Exists, "Dump file was created, even though action is null.");
+
+        } // end sub
+
+        [TestMethod]
         public void TestMethod_WriteTextFile_ContentIsWritten()
         {
             Dumper.IsEnabled = true;
@@ -208,6 +252,37 @@ namespace Net.Surviveplus.Dump.Test
 
         #endregion
 
+        #region DumpTsvHeader & DumpTsvRecord
+
+        [TestMethod]
+        public void TestMethods_DumpTsvHeader_DumpTsvRecord_anonymous()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample =
+                from i in new int[] { 1, 2, 3 }
+                select new { A = i, B = true, C = "Sample" + i.ToString() };
+            var name = this.TestContext.TestName;
+            var expected = "A\tB\tC\r\n" + "1\tTrue\tSample1\r\n" + "2\tTrue\tSample2\r\n" + "3\tTrue\tSample3\r\n";
+
+            Dumper.DumpTsvHeader(sample.FirstOrDefault(), name, a=>a);
+            foreach (var item in sample)
+            {
+                Dumper.DumpTsvRecord(item, name, a => a);
+            } // next item
+
+            var f = Dumper.GetDumpFile(name, ".tsv");
+            Debug.WriteLine(f);
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+            var actual = File.ReadAllText(f.FullName);
+
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+
+        } // end function
+        #endregion
 
         #region DumpTsv
 
@@ -285,6 +360,39 @@ namespace Net.Surviveplus.Dump.Test
         } // end sub
         #endregion
 
+        #region WriteTsvHeader & WriteTsvRecord
+
+        [TestMethod]
+        public void TestMethods_WriteTsvHeader_WriteTsvRecord_anonymous()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample =
+                from i in new int[] { 1, 2, 3 }
+                select new object[] { i, true, "Sample" + i.ToString() };
+            var name = this.TestContext.TestName;
+            var expected = "A\tB\tC\r\n" + "1\tTrue\tSample1\r\n" + "2\tTrue\tSample2\r\n" + "3\tTrue\tSample3\r\n";
+
+            Dumper.WriteTsvHeader(name, new string[] { "A", "B", "C" });
+            foreach (var item in sample)
+            {
+                Dumper.WriteTsvRecord(item, name);
+            } // next item
+
+
+            var f = Dumper.GetDumpFile(name, ".tsv");
+            Debug.WriteLine(f);
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+            var actual = File.ReadAllText(f.FullName);
+
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+
+        } // end sub
+        #endregion
+
         #region WriteTsv
 
         [TestMethod]
@@ -337,8 +445,6 @@ namespace Net.Surviveplus.Dump.Test
             Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
         } // end sub
         #endregion
-
-
 
     } // end class
 } // end namespace
