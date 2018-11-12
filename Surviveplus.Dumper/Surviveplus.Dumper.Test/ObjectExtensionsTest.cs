@@ -80,9 +80,8 @@ namespace Net.Surviveplus.Dump.Test
 
         } // end function
 
-
         [TestMethod]
-        public void TestExtensionMethod_DumpTsv_anonymous()
+        public void TestExtensionsMethod_DumpTsv_anonymous()
         {
             Dumper.IsEnabled = true;
             Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
@@ -103,37 +102,6 @@ namespace Net.Surviveplus.Dump.Test
 
             Debug.WriteLine(actual);
             Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
-        } // end sub
-
-
-        [TestMethod]
-        public void TestExtensionMethods_WriteTsvHeader_WriteTsvRecord_anonymous()
-        {
-            Dumper.IsEnabled = true;
-            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
-            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
-
-            var sample =
-                from i in new int[] { 1, 2, 3 }
-                select new object[] { i, true, "Sample" + i.ToString() };
-            var name = this.TestContext.TestName;
-            var expected = "A\tB\tC\r\n" + "1\tTrue\tSample1\r\n" + "2\tTrue\tSample2\r\n" + "3\tTrue\tSample3\r\n";
-
-            new string[] { "A", "B", "C" }.WriteTsvHeader(name);
-            foreach (var item in sample)
-            {
-                item.WriteTsvRecord(name);
-            } // next item
-
-
-            var f = Dumper.GetDumpFile(name, ".tsv");
-            Debug.WriteLine(f);
-            Assert.IsTrue(f.Exists, "Dump file was not created.");
-            var actual = File.ReadAllText(f.FullName);
-
-            Debug.WriteLine(actual);
-            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
-
         } // end sub
 
         [TestMethod]
@@ -165,7 +133,6 @@ namespace Net.Surviveplus.Dump.Test
             Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
 
         } // end sub
-
 
         [TestMethod]
         public void TestExtensionsMethod_WriteTsv_anonymous()
