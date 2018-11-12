@@ -50,6 +50,28 @@ namespace Net.Surviveplus.Dump.Test
             Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
         } // end function
 
+        [TestMethod]
+        public void TestExtensionsMethod_DumpJson_anonymousWithoutFormat()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample = new { A = 10, B = true, C = "Sample" };
+            var expected = sample.ToJson();
+
+            var name = this.TestContext.TestName;
+            sample.DumpJson(name);
+
+            var f = Dumper.GetDumpFile(name, ".json");
+            Debug.WriteLine($"file: {f}");
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+
+            var actual = File.ReadAllText(f.FullName);
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+        } // end function
+
 
         [TestMethod]
         public void TestExtensionsMethods_DumpTsvHeader_DumpTsvRecord_anonymous()
@@ -68,6 +90,35 @@ namespace Net.Surviveplus.Dump.Test
             foreach (var item in sample)
             {
                 item.DumpTsvRecord( name, a => a);
+            } // next item
+
+            var f = Dumper.GetDumpFile(name, ".tsv");
+            Debug.WriteLine(f);
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+            var actual = File.ReadAllText(f.FullName);
+
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+
+        } // end function
+
+        [TestMethod]
+        public void TestExtensionsMethods_DumpTsvHeader_DumpTsvRecord_anonymousWithoutFormat()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample =
+                from i in new int[] { 1, 2, 3 }
+                select new { A = i, B = true, C = "Sample" + i.ToString() };
+            var name = this.TestContext.TestName;
+            var expected = "A\tB\tC\r\n" + "1\tTrue\tSample1\r\n" + "2\tTrue\tSample2\r\n" + "3\tTrue\tSample3\r\n";
+
+            sample.FirstOrDefault().DumpTsvHeader(name);
+            foreach (var item in sample)
+            {
+                item.DumpTsvRecord(name);
             } // next item
 
             var f = Dumper.GetDumpFile(name, ".tsv");
@@ -103,6 +154,31 @@ namespace Net.Surviveplus.Dump.Test
             Debug.WriteLine(actual);
             Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
         } // end sub
+
+        [TestMethod]
+        public void TestExtensionsMethod_DumpTsv_anonymousWithouyFormat()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample =
+                from i in new int[] { 1, 2, 3 }
+                select new { A = i, B = true, C = "Sample" + i.ToString() };
+            var name = this.TestContext.TestName;
+            var expected = "A\tB\tC\r\n" + "1\tTrue\tSample1\r\n" + "2\tTrue\tSample2\r\n" + "3\tTrue\tSample3\r\n";
+
+            sample.DumpTsv(name);
+
+            var f = Dumper.GetDumpFile(name, ".tsv");
+            Debug.WriteLine(f);
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+            var actual = File.ReadAllText(f.FullName);
+
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+        } // end sub
+
 
         [TestMethod]
         public void TestExtensionsMethods_WriteTsvHeader_WriteTsvRecord_anonymous()
