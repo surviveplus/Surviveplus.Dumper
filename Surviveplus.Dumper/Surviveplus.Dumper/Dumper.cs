@@ -176,17 +176,30 @@ namespace Net.Surviveplus.Dump
                     foreach (var item in target)
                     {
                         var v = format(item);
-                        if(isFirst){
+                        if (isFirst) {
                             isFirst = false;
                             if (writeHeader)
                             {
-                                tsv.WriteHeader(v.GetType());
+                                if (typeof(T) == typeof(string))
+                                {
+                                    tsv.WriteField("string");
+                                }
+                                else
+                                {
+                                    tsv.WriteHeader(v.GetType());
+                                } // end if
                                 tsv.NextRecord();
                             }
                         } // end if
 
-                        tsv.WriteRecord(v);
+                        if (typeof(T) == typeof(string)) {
+                            tsv.WriteField(v);
+                        }else
+                        {
+                            tsv.WriteRecord(v);
+                        } // end if
                         tsv.NextRecord();
+
                     } // next item
                 } // end using (tsv)
             });

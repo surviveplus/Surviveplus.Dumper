@@ -286,6 +286,31 @@ namespace Net.Surviveplus.Dump.Test
 
         #region DumpTsv
 
+
+        [TestMethod]
+        public void TestMethod_DumpTsv_string()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample =
+                from i in new int[] { 1, 2, 3 }
+                select "Sample" + i.ToString();
+            var name = this.TestContext.TestName;
+            var expected = "string\r\n" + "Sample1\r\n" + "Sample2\r\n" + "Sample3\r\n";
+
+            Dumper.DumpTsv(sample, name, a => a);
+
+            var f = Dumper.GetDumpFile(name, ".tsv");
+            Debug.WriteLine(f);
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+            var actual = File.ReadAllText(f.FullName);
+
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+        } // end sub
+
         [TestMethod]
         public void TestMethod_DumpTsv_anonymous()
         {
