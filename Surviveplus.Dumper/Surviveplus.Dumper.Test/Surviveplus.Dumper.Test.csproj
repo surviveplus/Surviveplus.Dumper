@@ -60,6 +60,7 @@
     <Compile Include="Properties\Settings.ExcludeFromCodeCoverage.cs">
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="SampleClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
