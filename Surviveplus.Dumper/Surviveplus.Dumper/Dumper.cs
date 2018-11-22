@@ -144,6 +144,54 @@ namespace Net.Surviveplus.Dump
             });
         } // end sub
 
+
+        /// <summary>
+        /// <para xml:lang="en">Dump properties of a object to a JSON file.</para>
+        /// <para xml:lang="ja">オブジェクトのプロパティをJSONファイルにダンプします</para>
+        /// </summary>
+        /// <typeparam name="T">
+        /// <para xml:lang="en">The type of object to dump.</para>
+        /// <para xml:lang="ja">ダンプするオブジェクトの型</para>
+        /// </typeparam>
+        /// <param name="target">
+        /// <para xml:lang="en">The object to dump.</para>
+        /// <para xml:lang="ja">ダンプするオブジェクト</para>
+        /// </param>
+        /// <param name="name">
+        /// <para xml:lang="en">The name which is used for a file.</para>
+        /// <para xml:lang="ja">ファイルに使用される名前。</para>
+        /// </param>
+        /// <param name="predicate">
+        /// The lambda expression which determines whether to dump.
+        /// The file is outputted  when the return value is true. It will not be dumped when false.
+        /// <para xml:lang="en">
+        /// </para>
+        /// <para xml:lang="ja">
+        /// ダンプするかどうかを判定するラムダ式。
+        /// 戻り値がTrueのときにファイルが出力されます。Falseの時にはダンプされません。
+        /// </para>
+        /// </param>
+        /// <param name="format">
+        /// <para xml:lang="en">
+        /// The lambda expression which is used for choosing properties to dump.
+        /// Set like <code>a=&gt;new {a.A, a.B}</code>  to dump A property and B property of the object.
+        /// Set like <code>a=&gt;a</code>  to dump all properties of the object.
+        /// </para>
+        /// <para xml:lang="ja">
+        /// ダンプするプロパティを選択するラムダ式。
+        /// オブジェクトのAプロパティとBプロパティをダンプする場合には、<code>a=&gt;new {a.A, a.B}</code> のように指定します。
+        /// 全てのプロパティをダンプする場合には<code>a=&gt;a</code>を指定します。
+        /// </para>
+        /// </param>
+        public static void DumpJsonIf<T>(T target, string name, Func<T,bool> predicate, Func<T, object> format) {
+
+            if (predicate(target))
+            {
+                DumpJson(target, name, format);
+            } // end if
+        } // end sub
+
+
         /// <summary>
         /// <para xml:lang="en">Output the names of properties of a object as header of a TSV file.</para>
         /// <para xml:lang="ja">TSVファイルヘッダとして、オブジェクトのプロパティの名前を出力します。</para>

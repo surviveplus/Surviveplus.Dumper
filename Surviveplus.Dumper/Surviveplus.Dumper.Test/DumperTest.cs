@@ -252,6 +252,58 @@ namespace Net.Surviveplus.Dump.Test
 
         #endregion
 
+        #region TestMethod_DumpJsonIf
+
+        [TestMethod]
+        public void TestMethod_DumpJsonIf_anonymousWithFormat()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample = new { A = 10, B = true, C = "Sample" };
+            var sampleFormatted = new { A = 10, C = "Sample" };
+            var expected = sampleFormatted.ToJson();
+
+            var name = this.TestContext.TestName;
+            Dumper.DumpJsonIf(sample, name, a=> a.A > 0,  a => new { a.A, a.C });
+
+            var f = Dumper.GetDumpFile(name, ".json");
+            Debug.WriteLine($"file: {f}");
+            Assert.IsTrue(f.Exists, "Dump file was not created.");
+
+            var actual = File.ReadAllText(f.FullName);
+            Debug.WriteLine(actual);
+            Assert.AreEqual(expected, actual, "The content of the dump file is not text that is expected.");
+        } // end function
+
+        [TestMethod]
+        public void TestMethod_DumpJsonIf_predicateIsFalse()
+        {
+            Dumper.IsEnabled = true;
+            Dumper.Folder = new DirectoryInfo(Path.Combine(this.TestContext.TestRunResultsDirectory, "dump"));
+            Debug.WriteLine($"Dumper.Folder: {Dumper.Folder}");
+
+            var sample = new { A = 10, B = true, C = "Sample" };
+            var sampleFormatted = new { A = 10, C = "Sample" };
+
+            var name = this.TestContext.TestName;
+            Dumper.DumpJsonIf(sample, name, 
+                a => a.A == 0, 
+                a => {
+                    Assert.Fail("Action of format was called, even though result of predicate is false.");
+                    return new { a.A, a.C };
+                });
+
+            var f = Dumper.GetDumpFile(name, ".json");
+            Debug.WriteLine($"file: {f}");
+            Assert.IsFalse(f.Exists, "Dump file was created, even though result of predicate is false.");
+
+        } // end function
+
+        #endregion
+
+
         #region DumpTsvHeader & DumpTsvRecord
 
         [TestMethod]
